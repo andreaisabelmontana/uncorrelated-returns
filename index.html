@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Uncorrelated Returns — Built From Scratch</title>
+<meta name="description" content="An original from-scratch build of an uncorrelated-returns portfolio engine: combine many independent return streams to cut risk without cutting return — Ray Dalio's 'Holy Grail' of investing." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#4f46e5; --accent-soft:#eef0ff; --ink:#161427; --muted:#5a5872;
+    --line:#e2e1f0; --bg:#faf9fe; --card:#ffffff;
+    --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto;padding:0 28px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:.1em .4em;border-radius:4px;color:#3730a3}
+  h1,h2,h3{font-family:var(--serif);font-weight:500;line-height:1.15;letter-spacing:-.01em}
+  header.hero{padding:88px 0 56px;border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 22px}
+  h1{font-size:clamp(2.6rem,6vw,4.1rem);margin:0 0 18px}
+  .lede{font-size:1.22rem;color:var(--muted);max-width:62ch;margin:0 0 28px}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;font-size:.82rem}
+  .chip{font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--muted);background:var(--card)}
+  section{padding:54px 0;border-bottom:1px solid var(--line)}
+  .kicker{font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+  h2{font-size:clamp(1.7rem,3.4vw,2.3rem);margin:0 0 20px}
+  h3{font-size:1.2rem;margin:0 0 6px}
+  p{margin:0 0 18px;max-width:68ch}
+  .muted{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:8px}
+  .tool{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .tool .t{font-family:var(--mono);font-size:.78rem;color:var(--accent);letter-spacing:.04em;margin-bottom:8px}
+  .tool h3{font-size:1.05rem;font-family:var(--sans);font-weight:600;margin-bottom:6px}
+  .tool p{font-size:.92rem;color:var(--muted);margin:0}
+  ol.flow{counter-reset:s;list-style:none;padding:0;margin:24px 0 0}
+  ol.flow li{position:relative;padding:18px 0 18px 56px;border-top:1px solid var(--line)}
+  ol.flow li:before{counter-increment:s;content:counter(s,decimal-leading-zero);position:absolute;left:0;top:18px;font-family:var(--mono);font-size:.8rem;color:var(--accent);border:1px solid var(--line);border-radius:8px;width:38px;height:38px;display:grid;place-items:center;background:var(--card)}
+  ol.flow li h3{font-family:var(--sans);font-size:1.02rem;font-weight:600;margin:0 0 4px}
+  ol.flow li p{margin:0;font-size:.93rem;color:var(--muted)}
+  .callout{background:var(--accent-soft);border:1px solid #c9c7f5;border-radius:14px;padding:24px 26px;margin-top:8px}
+  .callout p:last-child{margin:0}
+  ul.learn{list-style:none;padding:0;margin:8px 0 0}
+  ul.learn li{padding:14px 0 14px 30px;border-top:1px solid var(--line);position:relative;color:var(--muted);max-width:68ch}
+  ul.learn li:before{content:"→";position:absolute;left:0;color:var(--accent);font-family:var(--mono)}
+  ul.learn li b{color:var(--ink);font-weight:600}
+  .price{display:flex;align-items:baseline;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 26px;margin-top:8px}
+  .price .n{font-family:var(--serif);font-size:2.6rem;color:var(--accent);line-height:1}
+  .price .l{color:var(--muted);font-size:.95rem}
+  footer{padding:48px 0 80px}
+  .credit{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+  .credit .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  footer .fine{font-size:.8rem;color:var(--muted);margin-top:22px;text-align:center}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">From-Scratch Build · Reinforcement Learning</p>
+    <h1>Uncorrelated Returns</h1>
+    <p class="lede">The closest thing to a free lunch in investing: stack fifteen or twenty return streams that don't move together, and the portfolio's risk collapses while its return holds. I rebuilt the engine that finds and combines them from scratch to understand why diversification — done honestly — is the only edge that compounds.</p>
+    <div class="meta">
+      <span class="chip">Python</span><span class="chip">NumPy / pandas</span><span class="chip">Portfolio theory</span>
+      <span class="chip">Correlation</span><span class="chip">Risk parity</span><span class="chip">Backtesting</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">What it is</p>
+    <h2>The "Holy Grail" of investing, in code</h2>
+    <p>The premise is one chart that famously reshaped how a generation of investors thinks: as you add return streams that are <i>uncorrelated</i> with each other, your risk per unit of return falls off a cliff. Going from one bet to ten roughly cuts volatility in half — for the <i>same</i> expected return. Add more genuinely independent bets and the curve keeps dropping.</p>
+    <p>This build is the machinery behind that idea: take a universe of assets and strategies, measure how their returns actually co-move, and assemble the mix that squeezes the most return out of every unit of risk. The hard part isn't the math — it's being honest about how little real independence there is in a market that all sells off together when it panics.</p>
+    <div class="price">
+      <div class="n">~15</div>
+      <div class="l">the number of truly uncorrelated bets it takes to cut portfolio risk by roughly 80% — the target the whole engine is built around.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">The stack</p>
+    <h2>From price series to allocation</h2>
+    <p class="muted">A small, sharp toolkit — the value is in the statistics, not the framework count.</p>
+    <div class="grid">
+      <div class="tool"><div class="t">data</div><h3>Return series</h3><p>Daily price histories turned into return streams — the raw material every other step operates on.</p></div>
+      <div class="tool"><div class="t">core</div><h3>Correlation matrix</h3><p>The heart of the project: how every stream moves relative to every other. Low off-diagonal numbers are the prize.</p></div>
+      <div class="tool"><div class="t">sizing</div><h3>Risk parity</h3><p>Weight each bet by its risk contribution, not its dollar size, so no single stream quietly dominates the portfolio.</p></div>
+      <div class="tool"><div class="t">numerics</div><h3>NumPy / pandas</h3><p>Vectorised covariance, rolling windows and matrix algebra — fast enough to re-optimise as the data updates.</p></div>
+      <div class="tool"><div class="t">validation</div><h3>Backtester</h3><p>Walk the allocation forward through history and measure realised volatility, drawdown and Sharpe — not just the promised ones.</p></div>
+      <div class="tool"><div class="t">output</div><h3>Efficient frontier</h3><p>Plot risk against return for thousands of candidate mixes and read off where diversification stops paying.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">Architecture</p>
+    <h2>How an allocation is found</h2>
+    <p>Each rebalance walks the same pipeline, from raw returns to a target weight vector:</p>
+    <ol class="flow">
+      <li><h3>Ingest</h3><p>Load each asset's price history and convert it into a clean stream of periodic returns.</p></li>
+      <li><h3>Measure co-movement</h3><p>Compute the covariance and correlation matrix across all streams over a rolling window.</p></li>
+      <li><h3>Score independence</h3><p>Rank candidates by how little they add to existing risk — favouring genuinely uncorrelated additions.</p></li>
+      <li><h3>Optimise weights</h3><p>Solve for the allocation that maximises return per unit of risk under risk-parity constraints.</p></li>
+      <li><h3>Backtest &amp; report</h3><p>Replay the weights through history and surface realised Sharpe, volatility and worst drawdown.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">Reflection</p>
+    <h2>What rebuilding it taught me</h2>
+    <ul class="learn">
+      <li><b>Diversification is a math fact, not a slogan.</b> The risk reduction from uncorrelated bets is exact and provable — and far larger than intuition expects.</li>
+      <li><b>The scarce resource is independence.</b> Finding fifteen <i>truly</i> uncorrelated streams is much harder than finding fifteen assets; correlations spike to one exactly when you need them not to.</li>
+      <li><b>Risk parity beats dollar weighting.</b> Equal dollars hide wildly unequal risk; weighting by risk contribution is what makes the streams actually balance.</li>
+      <li><b>Backtests must use realised numbers.</b> The volatility you predicted and the volatility you got are different animals — only the second one matters.</li>
+      <li><b>Correlation is unstable.</b> A matrix is a snapshot, not a law; rolling re-estimation is the difference between a robust mix and a fragile one.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="credit">
+      <div class="k">About this build</div>
+      <p style="margin:0">An original, from-scratch build by <b>Andrea</b> — written to learn portfolio construction from the ground up: correlation, risk parity, the efficient frontier and honest backtesting. Plain HTML/CSS, deployed on GitHub Pages.</p>
+    </div>
+    <p class="fine">Built from scratch by Andrea · one of an ongoing series of learning builds.</p>
+  </div>
+</footer>
+</body>
+</html>
